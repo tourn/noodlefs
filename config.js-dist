@@ -1,4 +1,0 @@
-module.exports = {
-  wwwroot: "https://moodle.hsr.ch/",
-  token: ""
-}

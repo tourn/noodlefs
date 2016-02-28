@@ -1,16 +1,23 @@
 "use strict";
 
 var userdata = require('./userdata');
+var nfs = require('./fs');
 
-console.log(userdata.get());
+if(process.argv.length < 3){
+  //FIXME binary name
+  console.log("Usage: noodlefs <mountpoint>");
+  return 1;
+}
+
+var mountpoint = process.argv[2];
 
 if(!userdata.isComplete()){
   //var conf = userdata.get();
   userdata.prompt().then(function(data){
-    console.log(data);
+    nfs.mount(data, mountpoint);
   }).catch(function(err){
     console.log(err);
   });
 } else {
-  console.log(userdata.get());
+  nfs.mount(userdata.get(), mountpoint);
 }

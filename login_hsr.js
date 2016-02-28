@@ -121,7 +121,7 @@ function authenticateInteractively(){
           } else {
             authenticate(username, password).then(function(token){
               resolve(token);
-            }).error(function(error){
+            }).catch(function(error){
               reject(error);
             });
           }

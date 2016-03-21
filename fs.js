@@ -119,11 +119,13 @@ module.exports = {
             request.get(fileUrl, function (error, response, body) {
               if (!error && response.statusCode == 200) {
                 fs.writeFileSync(tmpFilePath, body);
+                var fd = fs.openSync(tmpFilePath, 'r');
+                cb(0, fd);
+              } else {
+                console.log("WARNING: failed to fetch course content module for (" + courseName + ", " + contentName + ", " + moduleName + ")");
+                cb(fuse.ENOENT);
               }
             }); 
-
-            var fd = fs.openSync(tmpFilePath, 'r');
-            cb(0, fd);
 
           }).catch(function (err) {
             console.log("WARNING: received no course content module for (" + courseName + ", " + contentName + ", " + moduleName + ")");

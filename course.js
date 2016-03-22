@@ -4,7 +4,14 @@ function Course(course){
   var root = course;
 
   this.getPath = function(path){
-    return getNode(root, path.split("/"));
+    if(path.length === 0) {
+      return root;
+    } else {
+      if(!(path instanceof Array)){
+        path = path.split("/");
+      }
+      return getNode(root, path);
+    }
   };
 
   this.list = function(node){

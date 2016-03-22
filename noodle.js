@@ -1,8 +1,8 @@
 "use strict";
 
-var assert = require('assert');
 var moodle_client = require("moodle-client");
-var Promise = require('bluebird');
+var Promise = require('bluebird'); //jshint ignore:line
+var Course = require('./course');
 
 function Noodle(auth) {
   var self = this;
@@ -12,32 +12,51 @@ function Noodle(auth) {
   this.root = null;
 
   self.init = function(){
-    return new Promise(function(resolve, reject){
-      moodle_client.init(auth).then(function(client) {
-        client.call({ // get user ID
-          wsfunction: "core_webservice_get_site_info",
-        }).then(function(data){
-          self.userId = data.userid;
-          client.call({
-            wsfunction: "core_enrol_get_users_courses",
-            args: { userid: self.userId }
-          }).then(function(courses){
-            courses.forEach(function(course){
-              self.courses[course.fullname] = {
-                id: course.id,
-                name: course.fullname,
-                content: null
-              };
-            });
-            resolve(self);
-          });
+    return moodle_client.init(auth).then(function(client) {
+      return client.call({ // get user ID
+        wsfunction: "core_webservice_get_site_info",
+      }).then(function(data){
+        self.userId = data.userid;
+        return client.call({
+          wsfunction: "core_enrol_get_users_courses",
+          args: { userid: self.userId }
         });
-      }).catch(function(err) {
-            console.log("Unable to initialize the client: " + err);
+      }).then(function(courses){
+        return Promise.all(courses.map(function(course){
+          return client.call({
+            wsfunction: "core_course_get_contents",
+            args: { courseid: 504 }
+          }).then(function(data){
+            return {
+              id: course.id,
+              name: course.fullname,
+              content: data
+            };
+          });
+        }));
+      }).then(function(fullCourses){
+        fullCourses.forEach(function(course){
+          self.courses[course.name] = course;
+        });
+        return self;
       });
     });
   };
-  self.init();
+
+  self.getNode = function(path){
+    if(path === '/'){
+      return self.getCourseNames();
+    } else {
+      var parts = path.split('/');
+      if(parts[0] === '') { parts.shift(); }
+      var course = self.courses[parts.shift()];
+      if(!course) { throw "Course not found!"; }
+      var c = new Course(course);
+      return c.getPath(parts);
+      //return something Course.getPath
+    }
+  };
+
 
   self.getCourseContentNames = function(courseName){
     console.log("> getCourseContentNames " + courseName + " id=" + self.courses[courseName].id);

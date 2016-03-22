@@ -37,6 +37,14 @@ describe('Course', function(){
     });
   });
 
+  it('handles array inputs', function(){
+    assert.ok(course.getPath(['Allgemeine Information'], ['Modulbeschreibung']));
+  });
+
+  it('lists its root', function(){
+    assert.ok(course.getPath(''));
+  });
+
   it('can find a TOP node', function(){
     assert.ok(course.getPath('Allgemeine Information'));
   });

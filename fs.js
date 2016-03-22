@@ -34,6 +34,9 @@ module.exports = {
             var contentName = parts[2];
             noodle.getCourseContentModules(courseName, contentName).then(function (modules) {
               cb(0, modules.map(function (module) { return module.name; }));
+            }).catch(function(err){
+              console.log("WARNING: not found");
+              cb(0, fuse.ENOENT);
             });
 
         } else {

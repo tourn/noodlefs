@@ -68,8 +68,10 @@ function Noodle(auth) {
   };
 
   self.getCourseContentModules = function(courseName, contentName) {
-    console.log("getCourseContentModules " + courseName + " id=" + self.courses[courseName].id);
+    var course = self.courses[courseName];
+    console.log("getCourseContentModules " + courseName);
     return new Promise(function(resolve,reject){
+      if(!course) { reject(); }
       moodle_client.init(auth).then(function(client) {
         client.call({
           wsfunction: "core_course_get_contents",

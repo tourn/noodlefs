@@ -1,3 +1,4 @@
+mnt/
 build/
 node_modules/
 *.sw?

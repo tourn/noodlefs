@@ -15,8 +15,9 @@ describe('Course', function(){
   });
 
   describe('list()', function(){
-    it('lists the children of a course', function(){
+    it.only('lists the children of a course', function(){
       var list = course.list();
+      console.log(list);
       assert.equal(16, list.length);
       assert.equal('Allgemeine Information', list[0]);
     });
@@ -54,7 +55,9 @@ describe('Course', function(){
   });
 
   it('can find a file node', function(){
-    assert.ok(course.getPath('Allgemeine Information/Modulbeschreibung/Modulbeschreibung'));
+    var node = course.getPath('Allgemeine Information/Modulbeschreibung/Modulbeschreibung');
+    assert.ok(node);
+    console.log(node);
   });
 
   it('throws when a node isn\'t found', function(){

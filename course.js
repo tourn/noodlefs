@@ -15,6 +15,7 @@ function Course(course){
   };
 
   this.list = function(node){
+    console.log("calling list with: " + node);
     if(node===undefined){
       return root.map(function(child){
         return getNodeName(child);
@@ -28,12 +29,12 @@ function Course(course){
 
   function getNode(parent, path){
     var name = path.shift();
-    console.log(">>get node " + name);
+    console.log(">>get node _" + name + "_");
     var node = parent.find(function(e){
       return getNodeName(e) === name;
     });
     if(!node){
-      throw new Error("not found!");
+      throw new Error("not found! had:" + parent.map(function(e){ return getNodeName(e); }));
     }
     if(path.length > 0){
       return getNode(getNodeChildren(node), path);

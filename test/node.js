@@ -4,7 +4,7 @@ var JSON5 = require('json5');
 var fs = require('fs');
 var course_vss = JSON5.parse(fs.readFileSync('course_vss.json'));
 var Node = require('../node');
-var Course = require('../course');
+var nock = require('nock');
 
 function isFolder(attr){
   var folderBit = parseInt('040000', 8);
@@ -66,7 +66,7 @@ describe('Node', function(){
       assert.equal(node.type, 'section');
     });
     it('can be listed', function(){
-      assert.equal(node.list[0], 'Modulbeschreibung');
+      assert.equal(node.list[0], 'Modulbeschreibung.html');
     });
     it('has node children', function(){
       assert.equal(node.children[0].type, 'url');
@@ -78,16 +78,39 @@ describe('Node', function(){
 
   describe('of a module of type', function(){
     describe('file', function(){
-      it('has the correct type', function(){
-        assert.equal(node.type, 'file');
+      var node;
+      before(function(){
+        node = Node.fromModule(course_vss[1].modules[1]);
       });
-      it('has a download URL', function(){
+      it('is not a folder', function(){
+        assert(!isFolder(node.attrs));
       });
-      it('has a local path', function(){
+      it('opens a file descriptor on the downloaded file', function(done){
+        var content = "Friendly little demo text.\n";
+        nock('https://moodle.hsr.ch').get(/.*/)
+        .reply(200, content);
+        node.open({token: 'FOO'}).then(function(fd){
+          var buf = new Buffer(content.length, 'utf8');
+          fs.read(fd, buf, 0, buf.length);
+          assert.equal(buf, content);
+          done();
+        }).catch(done);
+      });
+      it('open throws if file can\'t be acquired', function(done){
+        nock('https://moodle.hsr.ch').get(/.*/)
+        .reply(200, {
+          "error":"Ungültiges Token - Token wurde nicht gefunden",
+          "stacktrace":null,
+          "debuginfo":null,
+          "reproductionlink":null
+        });
+        node.open({token: 'FOO'}).then(function(){
+          done(new Error('Should have thrown!'));
+        }).catch(function(){ done(); });
       });
     });
 
-    describe.only('url', function(){
+    describe('url', function(){
       var node;
       before(function(){
         node = Node.fromModule(course_vss[0].modules[0]);
@@ -115,6 +138,19 @@ describe('Node', function(){
       it('can be listed', function(){
       });
       it('is a folder', function(){
+      });
+    });
+
+    describe('unsupported', function(){
+      var node;
+      before(function(){
+        node = Node.fromModule(course_vss[0].modules[2]);
+      });
+      it('has the correct type', function(){
+        assert.equal(node.type, 'unsupported');
+      });
+      it('cannot be accessed', function(){
+        assert.equal(0, node.attrs.mode);
       });
     });
 

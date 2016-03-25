@@ -2,6 +2,7 @@
 var redirect = require('./htmlredirect');
 var Promise = require('bluebird'); //jshint ignore:line
 var fs = Promise.promisifyAll(require('fs'));
+var http = require('https');
 
 
 function makeNode(moodleObject){
@@ -64,8 +65,8 @@ function fromModule(module){
   switch(module.modname){
     case 'url':
       return fromUrl(module);
-    case 'folder':
-      return fromFolder(module);
+    //case 'folder':
+    //  return fromFolder(module);
     case 'resource':
       return fromFile(module);
     default:
@@ -90,9 +91,54 @@ function fromUrl(module){
   return node;
 }
 
+function fromFile(module){
+  var content = module.contents[0];
+  if(!content) { throw new Error("file doesn't seem to have any content"); }
+  var filepath = makeTempFilePath();
+  var node = {
+    name: content.filename,
+    type: 'file',
+    attrs: makeFileAttrs(content.filesize, content.timecreated, content.timemodified),
+    open: function(auth, mockClient){
+      var client = mockClient || http;
+      var file = fs.createWriteStream(filepath);
+      var url = content.fileurl + "&token=" + auth.token;
+      //console.log("downloading: " + url);
+      return new Promise(function(resolve, reject){
+        client.get(url, function(response){
+          if(response.headers['content-type'] === 'application/json'){
+            //if we get JSON back, it is most likely an error message
+            //TODO: get the actual error message and use it for rejection message
+            reject(new Error("Downloading file failed!"));
+          } else {
+            response.pipe(file);
+            file.on('finish', function(){
+              file.close(function(){
+                resolve(fs.openAsync(filepath, 'r'));
+              });
+            });
+          }
+        }).on('error', reject);
+      });
+    }
+  };
+  return node;
+}
+
+function fromUnsupported(module){
+  var attrs = makeDirAttrs();
+  attrs.size = 0;
+  attrs.mode = parseInt('000000', 8);
+  return {
+    name: module.name + " [" + module.modname + "]",
+    type: 'unsupported',
+    attrs: attrs
+  };
+}
+
 function makeTempFilePath(){
   //TODO make folder configurable, make sure folder exists, make sure to wipe folder on start?
-  //AND do this someplace else
+  //AND do this someplace else => probably userData?
   return '/tmp/noodletmp/' + Math.random().toString().substr(2);
 }
 

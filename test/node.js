@@ -1,14 +1,13 @@
 "use strict";
 var assert = require('assert');
-var JSON5 = require('json5');
 var fs = require('fs');
-var course_vss = JSON5.parse(fs.readFileSync('course_vss.json'));
-var Node = require('../node');
+var course = require('./course_data');
+var Node = require('../node'); //jshint ignore:line
 var nock = require('nock');
 
 function isFolder(attr){
   var folderBit = parseInt('040000', 8);
-  return attr.mode & folderBit === folderBit;
+  return attr.mode & folderBit === folderBit; //jshint ignore:line
 }
 
 describe('Node', function(){
@@ -18,7 +17,7 @@ describe('Node', function(){
     before(function(){
      node = Node.fromCourseList({
       type: 'course-list',
-      courses: [{ id:1, name: 'VSS', content: course_vss }]
+      courses: [{ id:1, name: 'Test Course', content: course }]
       });
     });
 
@@ -26,7 +25,7 @@ describe('Node', function(){
       assert.equal(node.type, 'course-list');
     });
     it('can be listed', function(){
-      assert.equal(node.list[0], 'VSS');
+      assert.equal(node.list[0], 'Test Course');
     });
     it('has node children', function(){
       assert.equal(node.children[0].type, 'course');
@@ -39,15 +38,16 @@ describe('Node', function(){
   describe('Of a course', function(){
     var node;
     before(function(){
-      node = Node.fromCourse({id: 1, name: 'VSS', content:course_vss});
+      node = Node.fromCourse({id: 1, name: 'Test Course', content:course});
     });
 
     it('has the correct type', function(){
       assert.equal(node.type, 'course');
-      assert.equal(node.name, 'VSS');
+      assert.equal(node.name, 'Test Course');
     });
     it('can be listed', function(){
-      assert.equal(node.list[0], 'Allgemeine Information');
+      assert.equal(node.list[0], 'Section 1');
+      assert.equal(node.list[1], 'Section 2');
     });
     it('has node children', function(){
       assert.equal(node.children[0].type, 'section');
@@ -60,14 +60,14 @@ describe('Node', function(){
   describe('Of a section', function(){
     var node;
     before(function(){
-      node = Node.fromSection(course_vss[0]);
+      node = Node.fromSection(course[0]);
     });
 
     it('has the correct type', function(){
       assert.equal(node.type, 'section');
     });
     it('can be listed', function(){
-      assert.equal(node.list[0], 'Modulbeschreibung.html');
+      assert.equal(node.list[0], 'Link Module.html');
     });
     it('has node children', function(){
       assert.equal(node.children[0].type, 'url');
@@ -81,7 +81,7 @@ describe('Node', function(){
     describe('file', function(){
       var node;
       before(function(){
-        node = Node.fromModule(course_vss[1].modules[1]);
+        node = Node.fromModule(course[1].modules[1]);
       });
       it('is not a folder', function(){
         assert(!isFolder(node.attrs));
@@ -89,7 +89,7 @@ describe('Node', function(){
       //the test seems to fail randomly on the buffer comparison
       it.skip('opens a file descriptor on the downloaded file', function(done){
         var content = "Friendly little demo text.\n";
-        nock('https://moodle.hsr.ch').get(/.*/)
+        nock('https://moodle.example.com').get(/.*/)
         .reply(200, content);
         node.open({token: 'FOO'}).then(function(fd){
           var buf = new Buffer(content.length, 'utf8');
@@ -99,7 +99,7 @@ describe('Node', function(){
         }).catch(done);
       });
       it('open throws if file can\'t be acquired', function(done){
-        nock('https://moodle.hsr.ch').get(/.*/)
+        nock('https://moodle.example.com').get(/.*/)
         .reply(200, {
           "error":"Ungültiges Token - Token wurde nicht gefunden",
           "stacktrace":null,
@@ -115,7 +115,7 @@ describe('Node', function(){
     describe('url', function(){
       var node;
       before(function(){
-        node = Node.fromModule(course_vss[0].modules[0]);
+        node = Node.fromModule(course[0].modules[0]);
       });
       it('has the correct type', function(){
         assert.equal(node.type, 'url');
@@ -127,13 +127,14 @@ describe('Node', function(){
         node.open().then(function(fd){
           var buf = new Buffer(node.attrs.size);
           fs.readSync(fd, buf, 0, buf.length);
-          assert(buf.indexOf("http://studien.hsr.ch/allModules/27164_M_Vss.html") > -1);
+          assert(buf.indexOf('https://i.ytimg.com/vi/tntOCGkgt98/maxresdefault.jpg') > -1);
           done();
         }).catch(done);
       });
     });
 
     describe.skip('folder', function(){
+      var node;
       it('has the correct type', function(){
         assert.equal(node.type, 'folder');
       });
@@ -146,7 +147,7 @@ describe('Node', function(){
     describe('unsupported', function(){
       var node;
       before(function(){
-        node = Node.fromModule(course_vss[0].modules[2]);
+        node = Node.fromModule(course[0].modules[2]);
       });
       it('has the correct type', function(){
         assert.equal(node.type, 'unsupported');

@@ -5,29 +5,23 @@ var userdata = require('../userdata');
 var auth = userdata.get();
 var Noodle = require('../noodle');
 var sinon = require('sinon');
-var JSON5 = require('json5');
 var fs = require('fs');
-
-var course_vss = JSON5.parse(fs.readFileSync('course_vss.json'));
-var course_wi1 = JSON5.parse(fs.readFileSync('course_wi1.json'));
-
-
-
+var course = require('./course_data');
 
 describe('Noodle', function(){
   var moodleStub = {};
-  var auth = {"wwwroot":"https://moodle.hsr.ch/","token":"boo"};
+  var auth = {"wwwroot":"https://moodle.example.com/","token":"boo"};
   var noodle;
 
   beforeEach(function(done){
     var call = sinon.stub();
     call.onCall(0).returns(Promise.resolve({userid: 123})); // user info
     call.onCall(1).returns(Promise.resolve([
-        {id: 1, fullname: 'VSS'},
-        {id: 2, fullname: 'WI1'}
+        {id: 1, fullname: 'Test Course'},
+        {id: 2, fullname: 'Crash Course'}
     ])); // courses
-    call.onCall(2).returns(Promise.resolve(course_vss));
-    call.onCall(3).returns(Promise.resolve(course_wi1));
+    call.onCall(2).returns(Promise.resolve(course));
+    call.onCall(3).returns(Promise.resolve(course));
     moodleStub.call = call;
 
     var init = sinon.stub();
@@ -51,54 +45,18 @@ describe('Noodle', function(){
     });
 
     it('returns a valid course node', function(){
-      var node = noodle.getNode('/VSS');
+      var node = noodle.getNode('/Test Course');
       assert.equal(node.type, 'course');
     });
 
     it('returns a valid section node', function(){
-      var node = noodle.getNode('/VSS/Allgemeine Information');
+      var node = noodle.getNode('/Test Course/Section 1');
       assert.equal(node.type, 'section');
     });
 
     it('returns a valid module node', function(){
-      var node = noodle.getNode('/VSS/Allgemeine Information/Modulbeschreibung.html');
+      var node = noodle.getNode('/Test Course/Section 1/Link Module.html');
       assert.equal(node.type, 'url');
     });
   });
 });
-
-/*
-new Noodle(auth).init().then(function(noodle){
-  console.log("yay");
-
-  var n1 = noodle.getNode('/');
-  console.log(n1);
-  console.log(noodle.getAttr(n1));
-  console.log(noodle.list(n1));
-  console.log("++++++1");
-
-  var n2 = noodle.getNode('/Verteilte Software-Systeme FS2016');
-  //console.log(n2);
-  //console.log(noodle.getAttr(n2));
-  console.log(noodle.list(n2));
-  console.log("++++++2");
-
-  var n3 = noodle.getNode('/Verteilte Software-Systeme FS2016/Allgemeine Information');
-  console.log(n3);
-  console.log(noodle.getAttr(n3));
-  console.log(noodle.list(n3));
-  console.log("++++++3");
-
-  var n4 = noodle.getNode('/Verteilte Software-Systeme FS2016/Allgemeine Information/Modulbeschreibung');
-  console.log(n4);
-  console.log(noodle.getAttr(n4));
-  console.log(noodle.list(n4));
-  console.log("++++++4");
-
-  var n5 = noodle.getNode('/Verteilte Software-Systeme FS2016/Allgemeine Information/Modulbeschreibung/Modulbeschreibung');
-  console.log(n5);
-  console.log(noodle.getAttr(n5));
-  //console.log(noodle.list(n5));
-  console.log("++++++5");
-});
-*/

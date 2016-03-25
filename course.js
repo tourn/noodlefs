@@ -2,6 +2,7 @@
 
 function Course(course){
   var root = course;
+  this.type = 'course';
 
   this.getPath = function(path){
     if(path.length === 0) {

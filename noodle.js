@@ -4,15 +4,16 @@ var moodle_client = require("moodle-client");
 var Promise = require('bluebird'); //jshint ignore:line
 var Course = require('./course');
 
-function Noodle(auth) {
+function Noodle(auth, mockClient) {
   var self = this;
+  var client = mockClient || moodle_client;
 
   this.userId = -1;
-  this.courses = {};
+  this.courses = { type: 'course-list' };
   this.root = null;
 
   self.init = function(){
-    return moodle_client.init(auth).then(function(client) {
+    return client.init(auth).then(function(client) {
       return client.call({ // get user ID
         wsfunction: "core_webservice_get_site_info",
       }).then(function(data){
@@ -25,7 +26,7 @@ function Noodle(auth) {
         return Promise.all(courses.map(function(course){
           return client.call({
             wsfunction: "core_course_get_contents",
-            args: { courseid: 504 }
+            args: { courseid: 504 } // FIXME
           }).then(function(data){
             return {
               id: course.id,
@@ -122,53 +123,7 @@ function Noodle(auth) {
       return names;
   };
 
-  self.getCourseContentModuleUrl = function(courseName, contentName, moduleName) {
-    console.log("> getCourseContentModule " + courseName);
-    console.log(">   id=" + self.courses[courseName].id);
-    return new Promise(function(resolve,reject){
-      moodle_client.init(auth).then(function(client) {
-        client.call({
-          wsfunction: "core_course_get_contents",
-          args: { courseid: self.courses[courseName].id },
-        }).then(function(courseContents){
-          var fileUrl = '';
-
-          courseContents.forEach(function (content) {
-            if (content.name === contentName && content.modules.length >= 1) {
-            console.log("> found content");
-              content.modules.forEach(function (module) {
-                  console.log("> check module " + module.name + " for match with req " + moduleName);
-                if (module.name === moduleName) {
-                  console.log(">> found module = " + JSON.stringify(module));
-
-                  // >> found module = {"id":17964,"url":"https://moodle.hsr.ch/mod/resource/view.php?id=17964","name":"Zusatzmaterial zu U1 - Dokumentation ...","instance":8381,"visible":1,"modicon":"https://moodle.hsr.ch/theme/image.php/_s/more/core/1455119128/f/archive-24","modname":"resource","modplural":"Dateien","indent":0,
-                  // "contents":[
-                  //    {"type":"file","filename":"uebung-dokumentation.zip","filepath":"/","filesize":2464250,"fileurl":"https://moodle.hsr.ch/webservice/pluginfile.php/35098/mod_resource/content/1/uebung-dokumentation.zip?forcedownload=1","timecreated":1456155628,"timemodified":1456155652,"sortorder":1,"userid":3256,"author":"Daniel Keller","license":"allrightsreserved"}
-                  // ]}
-                  
-                  if (module.contents === undefined || module.contents.length == 0 || module.contents[0].type !== 'file') {
-                    reject("Not a file");
-                  }
-
-                  fileUrl = module.contents[0].fileurl + "&token=" + auth.token;
-                }
-              });
-            }
-          });
-
-          if (fileUrl === '') {
-              reject("No URL for file found!");
-          }
-
-          resolve(fileUrl);
-        });
-
-      }).catch(function(err) {
-            console.log("Unable to initialize the client: " + err);
-      });
-    });
-  };
-};
+}
 
 module.exports = Noodle;
 

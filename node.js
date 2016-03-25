@@ -128,7 +128,7 @@ function fromFile(module){
 function fromUnsupported(module){
   var attrs = makeDirAttrs();
   attrs.size = 0;
-  attrs.mode = parseInt('000000', 8);
+  attrs.mode = parseInt('100000', 8);
   return {
     name: module.name + " [" + module.modname + "]",
     type: 'unsupported',
@@ -147,7 +147,7 @@ function makeTempFilePath(){
 function makeFileAttrs(size, ctime, atime){
   var attrs = makeDirAttrs();
   attrs.size = size;
-  attrs.mode = parseInt('000444', 8);
+  attrs.mode = parseInt('100444', 8);
   attrs.ctime = makeDate(ctime);
   attrs.atime = makeDate(atime);
   return attrs;

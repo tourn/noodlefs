@@ -46,6 +46,22 @@ function prompt(){
           //TODO implement normal moodle token acquirement
           callback(new Error('Your moodle is currently not supported'));
         }
+      },
+      function(callback){
+        read({
+          prompt: 'Folder for temporary files: ',
+          default: data.tmpdir || '/tmp/noodletmp'
+        }, function(error, result){
+          data.tmpdir = result + '/';
+          set(data);
+          fs.mkdir(data.tmpdir, function(err){
+            if(!err || err.code === 'EEXIST'){
+              callback();
+            } else {
+              callback(err);
+            }
+          });
+        });
       }
     ], function(err){
       if(err){
@@ -59,12 +75,19 @@ function prompt(){
 
 function isComplete(){
   var data = get();
-  return data.wwwroot && data.token;
+  return data.wwwroot && data.token && data.tmpdir;
+}
+
+function makeTempFilePath(){
+  //TODO wipe this folder sometime?
+  var data = get();
+  return data.tmpdir + Math.random().toString().substr(2);
 }
 
 module.exports = {
   get: get,
   set: set,
   prompt: prompt,
-  isComplete: isComplete
+  isComplete: isComplete,
+  makeTempFilePath: makeTempFilePath
 };

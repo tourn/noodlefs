@@ -152,7 +152,7 @@ describe('Node', function(){
         assert.equal(node.type, 'unsupported');
       });
       it('cannot be accessed', function(){
-        assert.equal(0, node.attrs.mode);
+        assert.equal(parseInt('100000', 8), node.attrs.mode);
       });
     });
 

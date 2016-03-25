@@ -3,6 +3,7 @@ var redirect = require('./htmlredirect');
 var Promise = require('bluebird'); //jshint ignore:line
 var fs = Promise.promisifyAll(require('fs'));
 var http = require('https');
+var userdata = require('./userdata');
 
 
 function makeNode(moodleObject){
@@ -77,7 +78,7 @@ function fromModule(module){
 function fromUrl(module){
   var content = module.contents[0];
   if(!content) { throw new Error("Url doesn't seem to have any content"); }
-  var filepath = makeTempFilePath();
+  var filepath = userdata.makeTempFilePath();
   var node =  {
     name: module.name + ".html",
     type: 'url',
@@ -94,7 +95,7 @@ function fromUrl(module){
 function fromFile(module){
   var content = module.contents[0];
   if(!content) { throw new Error("file doesn't seem to have any content"); }
-  var filepath = makeTempFilePath();
+  var filepath = userdata.makeTempFilePath();
   var node = {
     name: content.filename,
     type: 'file',
@@ -136,11 +137,6 @@ function fromUnsupported(module){
   };
 }
 
-function makeTempFilePath(){
-  //TODO make folder configurable, make sure folder exists, make sure to wipe folder on start?
-  //AND do this someplace else => probably userData?
-  return '/tmp/noodletmp/' + Math.random().toString().substr(2);
-}
 
 
 
@@ -169,28 +165,6 @@ function makeDate(moodleTimestamp){
   if(!moodleTimestamp) { return new Date(); }
   return new Date(moodleTimestamp * 1000); //JS wants it in MS
 }
-
-var getAttr = function(node){
-  var attrs = makeDirAttrs();
-  attrs.mtime = makeDate(node.timemodified);
-  attrs.ctime = makeDate(node.timecreated);
-  switch(node.type){
-    case undefined: //folder
-      return attrs;
-    case 'url':
-      //attrs.mode = 33188;
-      attrs.mode = parseInt('000', 8); //for now: can't do anything with urls
-      return attrs;
-    case 'file':
-      //attrs.mode = 33188;
-      attrs.mode = parseInt('444', 8);
-      attrs.size = node.filesize;
-      return attrs;
-    default:
-      throw "Unknown filetype!";
-  }
-};
-
 
 module.exports = {
   makeNode: makeNode,

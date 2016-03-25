@@ -46,27 +46,23 @@ describe('Noodle', function(){
 
   describe('getNode', function(){
     it('returns a valid root node', function(){
-      var root = noodle.getNode('/');
-      assert.ok(root);
-      //assertEqual('VSS', root.courses[0].name); //TODO: decide the format to get here
+      var node = noodle.getNode('/');
+      assert.equal(node.type, 'course-list');
     });
 
     it('returns a valid course node', function(){
-      var course = noodle.getNode('/VSS');
-      assert.ok(course);
-      //TODO: decide the format to get here as well
+      var node = noodle.getNode('/VSS');
+      assert.equal(node.type, 'course');
     });
 
     it('returns a valid section node', function(){
       var node = noodle.getNode('/VSS/Allgemeine Information');
-      assert.ok(node);
-      //TODO: again
+      assert.equal(node.type, 'section');
     });
 
     it('returns a valid module node', function(){
-      var node = noodle.getNode('/VSS/Allgemeine Information/Modulbeschreibung');
-      assert.ok(node);
-      console.log(node);
+      var node = noodle.getNode('/VSS/Allgemeine Information/Modulbeschreibung.html');
+      assert.equal(node.type, 'url');
     });
   });
 });

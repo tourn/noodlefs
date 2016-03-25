@@ -37,7 +37,7 @@ function fromCourseList(moodleObject){
 
 function fromCourse(course){
   var node = {
-    name: course.fullname,
+    name: course.name,
     type: 'course',
     attrs: makeDirAttrs(),
     children: course.content.map(function(section){

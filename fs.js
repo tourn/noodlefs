@@ -2,7 +2,6 @@
 
 var fuse = require('fuse-bindings');
 var fs = require('fs');
-var request = require('request');
 var util = require('util');
 var Noodle = require('./noodle');
 

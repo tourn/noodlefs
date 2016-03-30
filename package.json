@@ -4,10 +4,21 @@
   "description": "Mount moodle as a FUSE filesystem",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "cd test && mocha *"
   },
-  "author": "",
+  "author": "Daniel Latzer",
   "license": "ISC",
+  "repository":{
+    "type": "git",
+    "url": "https://github.com/tourn/noodlefs"
+  },
+  "keywords": [
+    "moodle",
+    "fuse"
+  ],
+  "bugs": {
+    "url": "https://github.com/tourn/noodlefs/issues"
+  },
   "devDependencies": {
     "mocha": "^2.4.5",
     "sinon": "^1.17.3",
@@ -19,6 +30,7 @@
     "fs": "0.0.2",
     "fuse-bindings": "^2.8.1",
     "moodle-client": "^0.4.0",
-    "read": "^1.0.7"
+    "read": "^1.0.7",
+    "request": "2.69.0"
   }
 }

@@ -133,14 +133,23 @@ describe('Node', function(){
       });
     });
 
-    describe.skip('folder', function(){
+    describe('folder', function(){
       var node;
+      before(function(){
+        node = Node.fromModule(course[1].modules[2]);
+      });
       it('has the correct type', function(){
         assert.equal(node.type, 'folder');
       });
       it('can be listed', function(){
+        assert.equal(node.list[0], 'file1.pdf');
+        assert.equal(node.list[1], 'file2.pdf');
+      });
+      it('has file children', function(){
+        assert.equal(node.children[0].type, 'file');
       });
       it('is a folder', function(){
+        assert(isFolder(node.attrs));
       });
     });
 

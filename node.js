@@ -66,8 +66,8 @@ function fromModule(module){
   switch(module.modname){
     case 'url':
       return fromUrl(module);
-    //case 'folder':
-    //  return fromFolder(module);
+    case 'folder':
+      return fromFolder(module);
     case 'resource':
       return fromFile(module);
     default:
@@ -92,9 +92,26 @@ function fromUrl(module){
   return node;
 }
 
+function fromFolder(module){
+  var node = {
+    name: module.name,
+    type: 'folder',
+    attrs: makeDirAttrs(),
+    children: module.contents.map(function(file){
+      return fromFileContent(file); //HERHE
+    })
+  };
+  node.list = list(node);
+  return node;
+}
+
 function fromFile(module){
   var content = module.contents[0];
   if(!content) { throw new Error("file doesn't seem to have any content"); }
+  return fromFileContent(content);
+}
+
+function fromFileContent(content){
   var filepath = userdata.makeTempFilePath();
   var node = {
     name: content.filename,

@@ -46,7 +46,6 @@ function Noodle(auth, mockClient) {
   };
 
   self.getNode = function(path){
-    console.log(">> get node " + path);
     if(path === '/'){
       return self.root;
     } else {

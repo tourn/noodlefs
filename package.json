@@ -4,6 +4,7 @@
   "description": "Mount moodle as a FUSE filesystem",
   "main": "main.js",
   "scripts": {
+    "start": "DEBUG=\\* node main.js mnt",
     "test": "cd test && mocha *"
   },
   "author": "Daniel Latzer",
@@ -28,6 +29,7 @@
   "dependencies": {
     "async": "^2.0.0-rc.2",
     "bluebird": "^3.3.3",
+    "debug-logger": "^0.4.1",
     "fs": "0.0.2",
     "fuse-bindings": "^2.8.1",
     "moodle-client": "^0.4.0",

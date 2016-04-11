@@ -2,6 +2,7 @@
 
 var userdata = require('./userdata');
 var nfs = require('./fs');
+var log = require('debug-logger')('noodlefs');
 
 if(process.argv.length < 3){
   //FIXME binary name
@@ -9,6 +10,7 @@ if(process.argv.length < 3){
   return 1;
 }
 
+log.info('HI!');
 var mountpoint = process.argv[2];
 
 if(!userdata.isComplete()){

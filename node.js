@@ -4,7 +4,7 @@ var Promise = require('bluebird'); //jshint ignore:line
 var fs = Promise.promisifyAll(require('fs'));
 var http = require('https');
 var userdata = require('./userdata');
-
+var log = require('debug-logger')('noodlefs');
 
 function makeNode(moodleObject){
   if(moodleObject.type === 'course-list'){
@@ -84,9 +84,9 @@ function fromUrl(module){
     type: 'url',
     attrs: makeFileAttrs(redirect.getSize(content.fileurl), content.timecreated, content.timemodified),
     open: function(){
-			return redirect.makeRedirectFile(filepath, content.fileurl).then(function(){
-				return fs.openAsync(filepath, 'r');
-			});
+      return redirect.makeRedirectFile(filepath, content.fileurl).then(function(){
+        return fs.openAsync(filepath, 'r');
+      });
     }
   };
   return node;
@@ -121,7 +121,7 @@ function fromFileContent(content){
       var client = mockClient || http;
       var file = fs.createWriteStream(filepath);
       var url = content.fileurl + "&token=" + auth.token;
-      //console.log("downloading: " + url);
+      log.debug("downloading: " + url);
       return new Promise(function(resolve, reject){
         client.get(url, function(response){
           if(response.headers['content-type'] === 'application/json'){
@@ -153,9 +153,6 @@ function fromUnsupported(module){
     attrs: attrs
   };
 }
-
-
-
 
 function makeFileAttrs(size, ctime, atime){
   var attrs = makeDirAttrs();

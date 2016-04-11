@@ -17,6 +17,16 @@ function makeNode(moodleObject){
   //throw new Error("Cannot make node!");
 }
 
+function left_pad(string, width, sign){
+  sign = sign || '0';
+  string = String(string);
+
+  for(var i = string.length; i<width; i++){
+    string = sign + string;
+  }
+  return string;
+}
+
 function list(node){
   return node.children.map(function(child){
     return child.name;
@@ -41,17 +51,17 @@ function fromCourse(course){
     name: course.name,
     type: 'course',
     attrs: makeDirAttrs(),
-    children: course.content.map(function(section){
-      return fromSection(section);
+    children: course.content.map(function(section, index){
+      return fromSection(section, index);
     })
   };
   node.list = list(node);
   return node;
 }
 
-function fromSection(section){
+function fromSection(section, index){
   var node = {
-    name: section.name,
+    name: left_pad(index, 2) + '_' + section.name,
     type: 'section',
     attrs: makeDirAttrs(),
     children: section.modules.map(function(module){
